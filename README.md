@@ -22,5 +22,20 @@
 └── user.py                     #相关类定义：豆瓣用户，书影音数据，小组成员类
 ```
 
+# 使用说明
+## 环境
+- Python v3+
+- `pip install -r requirement.txt`
+
+## 修改配置文件
+- 直接修改`config_example.ini`的文件名，或者`cp config_example.ini config.ini`新建一份
+- 修改`config.ini`中对应的字段
+
+## 运行
+- `python crawler.py`
+- 执行产生的文件：
+    - `group.db`：对应的sqlite数据库文件
+    - `default.log`：日志文件
+
 # Changelog
-- 2019-08-29: 创建文档并添加项目说明以及目录说明
+- 2019-08-29: 创建文档并添加项目说明以及目录说明；添加使用说明

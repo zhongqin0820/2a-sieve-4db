@@ -5,6 +5,8 @@
     - 相关的项目文档: CHANGELOG.md
     - 符合基本需求，可以work的代码
 - 与小组成员页相关内容的爬取
+- README.md中的使用说明
+- requirements.txt
 
 ### 弃用
 - 伪需求：自动二维码识别，目前的准确度太低
