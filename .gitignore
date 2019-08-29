@@ -1,0 +1,10 @@
+# 忽略cache等
+__pycache__/*
+.idea/*
+.DS_Store
+*/.DS_Store
+
+# 忽略项目相关的文件
+*.db
+*.log
+config.ini
