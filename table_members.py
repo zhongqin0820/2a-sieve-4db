@@ -220,24 +220,24 @@ class MembersTable(DBHandler):
         :rtype: Tuple
         """
         data = (
-            member.usr_id, #usr_id
-            member.usr_name, #usr_name
-            member.usr_addr, #usr_addr
-            member.url_icon, #url_icon
-            time.strftime("%Y-%m-%d", member.register_date), #register_date
-            member.com_likes, #com_likes
-            member.group_num, #group_num
-            member.contacts_num, #contacts_num
-            member.rev_contacts_num, #rev_contacts_num
-            member.stats_book.do, #stats_book_do
-            member.stats_book.wish, #stats_book_wish
-            member.stats_book.collect, #stats_book_collect
-            member.stats_movie.do, #stats_movie_do
-            member.stats_movie.wish, #stats_movie_wish
-            member.stats_movie.collect, #stats_movie_collect
-            member.stats_music.do, #stats_music_do
-            member.stats_music.wish, #stats_music_wish
-            member.stats_music.collect, #stats_music_collect
+            member.usr_id,  #usr_id
+            member.usr_name,  #usr_name
+            member.usr_addr,  #usr_addr
+            member.url_icon,  #url_icon
+            time.strftime("%Y-%m-%d", member.register_date),  #register_date
+            member.com_likes,  #com_likes
+            member.group_num,  #group_num
+            member.contacts_num,  #contacts_num
+            member.rev_contacts_num,  #rev_contacts_num
+            member.stats_book.do,  #stats_book_do
+            member.stats_book.wish,  #stats_book_wish
+            member.stats_book.collect,  #stats_book_collect
+            member.stats_movie.do,  #stats_movie_do
+            member.stats_movie.wish,  #stats_movie_wish
+            member.stats_movie.collect,  #stats_movie_collect
+            member.stats_music.do,  #stats_music_do
+            member.stats_music.wish,  #stats_music_wish
+            member.stats_music.collect,  #stats_music_collect
         )
         return data
 

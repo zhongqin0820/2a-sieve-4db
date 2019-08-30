@@ -9,6 +9,9 @@
 - requirements.txt
 - 项目指导：GUIDE.md
 
+### FIXED
+- 拼写错误
+
 ### 弃用
 - 伪需求：自动二维码识别，目前的准确度太低
 

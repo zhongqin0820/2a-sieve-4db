@@ -52,13 +52,13 @@ class DBHandler(object):
         """
         db_addr = self.db_addr
         conn = sqlite3.connect(db_addr)
-        # 本地磁盘
         if os.path.exists(db_addr) and os.path.isfile(db_addr):
+            # 本地磁盘
             print('数据库类型:[{}], 位于磁盘:[{}]'.format(self.type, db_addr))
             self.conn = conn
         else:
-        # 内存
-            print('数据库类型:[{}], 位于内存:[{}]'.format(self.type), ':memory:')
+            # 内存
+            print('数据库类型:[{}], 位于内存:[{}]'.format(self.type, ':memory:'))
             self.conn = sqlite3.connect(':memory:')
 
     def set_cur(self):

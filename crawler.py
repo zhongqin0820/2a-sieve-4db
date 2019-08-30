@@ -58,7 +58,7 @@ class Engine(object):
             # 再登录
             r = self.s.post(url, data, headers=headers)
         print(self.c.get(option='cookie_tip'))
-        print(json.dumps(self.s.cookies.get_dict(),sort_keys=True,indent =4,separators=(',', ': '),ensure_ascii=True))
+        print(json.dumps(self.s.cookies.get_dict(), sort_keys=True, indent =4, separators=(',', ': '), ensure_ascii=True))
     
     def run(self):
         """
@@ -71,13 +71,13 @@ class Engine(object):
             # 登录
             self.login()
             # 小组成员页
-            self.group_name = self.c.get('group','id')
-            print(self.group_name)
-            group = GroupList(self.s, self.group_name)
-            print('所爬小组：{}\t 总人数：{}\t 总页数{}'.format(self.group_name, group.total_members, group.total_pages))
+            group_name = self.c.get('group','id')
+            print(group_name)
+            group = GroupList(self.s, group_name)
+            print('所爬小组：{}\t 总人数：{}\t 总页数{}'.format(group_name, group.total_members, group.total_pages))
             # 小组成员页获取错误
             if group.total_members is 0 or group.total_pages is 0:
-                raise('所爬小组：{}\t 总人数：{}\t 总页数{}\n大概率账号被ban'.format(self.group_name, group.total_members, group.total_pages))
+                raise('所爬小组：{}\t 总人数：{}\t 总页数{}\n大概率账号被ban'.format(group_name, group.total_members, group.total_pages))
 
             # 设置开始爬的位置，倒着爬
             start_page = (lambda page_num: group.total_pages if page_num is -1 else page_num)(int(self.c.get('group', 'start_page')))
