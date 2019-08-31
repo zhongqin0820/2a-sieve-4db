@@ -10,3 +10,5 @@ __pycache__/*
 config.ini
 docs/
 stash/
+# 忽略通过python page_proxy.py得到的代理IP文件
+proxy.json
