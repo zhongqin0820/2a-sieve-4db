@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
-import requests
 import time
 import re
 
@@ -345,7 +344,6 @@ class GroupMember(DoubanUser):
         """
         打印从小组成员页面可以获得的基本信息：昵称，常居地，用户ID(主页地址)，头像
         """
-        # IMPROVE: 优雅的对齐输出
         usr_addr = (lambda addr: 'None' if addr is None else addr)(self.usr_addr)
         print('----------------------------------------------------------------------------------')
         print('主页: https://www.douban.com/people/{}'.format(self.usr_id))
@@ -365,3 +363,46 @@ class GroupMember(DoubanUser):
         self.stats_movie.print_stats()
         self.stats_music.print_stats()
         print('----------------------------------------------------------------------------------')
+
+
+class ContactsMember(DoubanUser):
+    """
+    我的关注列表用户
+    """
+
+    def __init__(self, usr_id, usr_name, usr_addr, url_icon, usr_sign, usr_rs):
+        """
+        初始化基本信息
+
+        :param usr_id: 豆瓣ID
+        :param usr_name: 用户名
+        :param usr_addr: 常居地地址
+        :param url_icon: 头像url地址
+        :param usr_sign: 签名
+        :param usr_rs: 所属标签组
+        :type usr_id: str
+        :type usr_name: str
+        :type usr_addr: str
+        :type url_icon: str
+        :type usr_sign: str
+        :type usr_rs: str
+        """
+        super(ContactsMember, self).__init__(usr_id)
+        self.usr_id = usr_id
+        self.usr_name = usr_name
+        self.usr_addr = usr_addr
+        self.url_icon = url_icon
+        self.usr_sign = usr_sign
+        self.usr_rs = usr_rs
+
+    def print_basic_infos(self):
+        """
+        打印从关注列表页面可以获得的基本信息：昵称，常居地，用户ID(主页地址)，头像，签名，所属标签组
+        """
+        usr_addr = (lambda addr: 'None' if addr is None else addr)(self.usr_addr)
+        print('-----------------------------------------------------------------------------------------')
+        print('主页: https://www.douban.com/people/{}'.format(self.usr_id))
+        print('昵称: {:30s}\t 所属标签组: {}\t 常居地: {:6s}'.format(self.usr_name, self.usr_rs, usr_addr))
+        print('签名: {}'.format(self.usr_sign))
+        print('头像: {}'.format(self.url_icon))
+        print('-----------------------------------------------------------------------------------------')
