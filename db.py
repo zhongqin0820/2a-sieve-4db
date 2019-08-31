@@ -46,6 +46,9 @@ class DBHandler(object):
         """
         self.table_name = (lambda name: self.default_table_name if name is '' else name)(table_name)
 
+    def get_table_name(self):
+        return self.table_name
+
     def set_conn(self):
         """
         建立数据库连接

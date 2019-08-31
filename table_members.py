@@ -2,6 +2,7 @@
 import time
 from db import DBHandler
 from user import GroupMember
+from config import Config
 
 
 class MembersTable(DBHandler):
@@ -17,7 +18,7 @@ class MembersTable(DBHandler):
         """
         try:
             sql = '''
-            CREATE TABLE `members` (
+            CREATE TABLE {} (
                 `usr_id` varchar(15) NOT NULL,
                 `usr_name` varchar(100) NOT NULL,
                 `usr_addr` varchar(50) DEFAULT NULL,
@@ -37,7 +38,7 @@ class MembersTable(DBHandler):
                 `stats_music_wish` int(4) DEFAULT 0,
                 `stats_music_collect` int(4) DEFAULT 0,
                 PRIMARY KEY (`usr_id`)
-            )'''
+            )'''.format(self.get_table_name())
             self.get_cur().execute(sql)
             self.conn.commit()
             self.close_cur()
@@ -47,11 +48,12 @@ class MembersTable(DBHandler):
     def insert_basic_infos(self, members):
         """
         插入成员的基本信息
+
         :param members: GroupMember类型的实例列表
         :type members: List[GroupMember]
         """
         try:
-            table_name = 'members'
+            table_name = self.get_table_name()
             sql = '''
             INSERT OR IGNORE INTO {} (usr_id, usr_name, usr_addr, url_icon) 
             VALUES (?,?,?,?)'''.format(table_name)
@@ -71,11 +73,12 @@ class MembersTable(DBHandler):
     def insert(self, members):
         """
         插入成员
+
         :param members: GroupMember类型的实例列表
         :type members: List[GroupMember]
         """
         try:
-            table_name = 'members'
+            table_name = self.get_table_name()
             sql = 'INSERT OR IGNORE INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(table_name)
             for member in members:
                 data = self.deconv_member(member)
@@ -88,12 +91,13 @@ class MembersTable(DBHandler):
     def delete(self, members):
         """
         按照usr_id删除成员
+
         :param members: GroupMember类型的实例列表
         :type members: List[GroupMember]
         """
         try:
             # IMPROVE: 为什么没有办法直接excutemany??
-            table_name = 'members'
+            table_name = self.get_table_name()
             sql = 'DELETE FROM {} WHERE usr_id = ?'.format(table_name)
             for member in members:
                 self.get_cur().execute(sql, [member.usr_id])
@@ -105,11 +109,12 @@ class MembersTable(DBHandler):
     def update_infos(self, members):
         """
         按照id更新成员的其它信息
+
         :param members: GroupMember类型的实例列表
         :type members: List[GroupMember]
         """
         try:
-            table_name = 'members'
+            table_name = self.get_table_name()
             sql = '''UPDATE {} SET 
             register_date = ?,com_likes = ?,group_num = ?,contacts_num = ?,rev_contacts_num= ?,
             stats_book_do = ?,stats_book_wish = ?,stats_book_collect = ?,
@@ -131,6 +136,7 @@ class MembersTable(DBHandler):
                     member.stats_music.do,  #stats_music_do
                     member.stats_music.wish,  #stats_music_wish
                     member.stats_music.collect,  #stats_music_collect
+                    member.usr_id
                 )
                 self.get_cur().execute(sql, data)
             self.conn.commit()
@@ -141,16 +147,17 @@ class MembersTable(DBHandler):
     def fetch_one_basic_infos(self):
         """
         获取表内一个数据的基本信息
+
         :return: 包含基本信息的GroupMember类实例
         :rtype: GroupMember
         """
         try:
-            table_name = self.table_name
-            sql = 'SELECT usr_id, usr_name, usr_addr, url_icon FROM {}'.format(table_name)
+            table_name = self.get_table_name()
+            sql = 'SELECT usr_id, usr_name, usr_addr, url_icon FROM {} ORDER BY RANDOM() LIMIT 1'.format(table_name)
             member = self.get_cur().execute(sql).fetchone()
             self.conn.commit()
             self.close_cur()
-            return GroupMember(member[0],member[1],member[2],member[3])
+            return GroupMember(member[0], member[1], member[2], member[3])
         except Exception as e:
             print(e)
             return None
@@ -165,7 +172,7 @@ class MembersTable(DBHandler):
         :rtype: bool
         """
         try:
-            table_name = self.table_name
+            table_name = self.get_table_name()
             sql = 'SELECT usr_id FROM {} WHERE usr_id = ?'.format(table_name)
             # IMPROVE: 更优雅的判断方式
             rowcount = len(self.get_cur().execute(sql,[usr_id]).fetchall())
@@ -183,7 +190,7 @@ class MembersTable(DBHandler):
         过滤函数，找到匹配的用户
         """
         try:
-            table_name = self.table_name
+            table_name = self.get_table_name()
             # 聚合分组操作
             sql = '''SELECT * FROM {}
             WHERE stats_book_collect >= 100
@@ -206,7 +213,7 @@ class MembersTable(DBHandler):
         :return: 转换后的GroupMember类实例
         :rtype: GroupMember
         """
-        member = GroupMember(data[0],data[1],data[2],data[3])
+        member = GroupMember(data[0], data[1], data[2], data[3])
         member.update_infos(data[4:])
         return member
 
@@ -214,6 +221,7 @@ class MembersTable(DBHandler):
     def deconv_member(member):
         """
         将GroupMember类的实例转换为插入元祖
+
         :param member: GroupMember类实例
         :type member: GroupMember
         :return: 转换后的元祖类型，用于插入数据库中
@@ -243,72 +251,81 @@ class MembersTable(DBHandler):
 
 
 if __name__ == '__main__':
-    members = MembersTable()
-    # 测试当前条目数
+    # 使用group_id作为表名
+    members = MembersTable(table_name=Config().get('group', 'id'))
     items = members.fetch_all()
     num_before_insert = len(items)
     print('当前共有: ', num_before_insert)
-    # 打印条目
-    for item in items[:3]:
-        member = members.conv_member(item)
-        member.print_infos()
-        # member.print_basic_infos()
-        print()
+    print('随机打印一个用户：')
+    members.fetch_one_basic_infos().print_basic_infos()
 
-    # 测试将元祖数据转换为GroupMember实例后，插入数据的功能
-    items = [
-    ('usr_id_existed_1', 'usr_id_existed_1', '北京', 'https://img3.doubanio.com/icon/usr_id_existed_1.jpg',
-    '2006-05-05', 36, 136, 247, 251, 2, 14, 50, 4, 82, 582, 0, 2, 96),
-    ('usr_id_existed_2', 'usr_id_existed_2', '北京', 'https://img3.doubanio.com/icon/usr_id_existed_2.jpg',
-    '2006-05-12', 33, 15, 84, 292, 7, 216, 150, 5, 225, 831, 0, 0, 108),
-    ('usr_id_existed_3', 'usr_id_existed_3', '昆明', 'https://img1.doubanio.com/icon/usr_id_existed_3.jpg',
-    '2005-12-03', 36, 243, 395, 144, 16, 124, 127, 6, 501, 1118, 16, 19, 14)
-    ]
-    for item in items:
-        members.insert([members.conv_member(item)])
+    # 默认的表：members里是拉到主页数据的用户表
+    # members = MembersTable()
+    # # 测试当前条目数
+    # items = members.fetch_all()
+    # num_before_insert = len(items)
+    # print('当前共有: ', num_before_insert)
+    # # 打印条目
+    # for item in items[:3]:
+    #     member = members.conv_member(item)
+    #     member.print_infos()
+    #     # member.print_basic_infos()
+    #     print()
 
-    # 测试判断ID是否存在
-    tests = [("usr_id_not_existed", False), ("usr_id_existed_1", True)]
-    try:
-        for test in tests:
-            if members.is_existed_by_id(test[0]) is not test[1]:
-                raise('expected {}, got {}'.format(test[1], not test[1]))
-    except Exception as e:
-        print(e)
-        print('测试失败：判断用户是否存在')
-    print('测试通过：判断用户是否存在')
+    # # 测试将元祖数据转换为GroupMember实例后，插入数据的功能
+    # items = [
+    # ('usr_id_existed_1', 'usr_id_existed_1', '北京', 'https://img3.doubanio.com/icon/usr_id_existed_1.jpg',
+    # '2006-05-05', 36, 136, 247, 251, 2, 14, 50, 4, 82, 582, 0, 2, 96),
+    # ('usr_id_existed_2', 'usr_id_existed_2', '北京', 'https://img3.doubanio.com/icon/usr_id_existed_2.jpg',
+    # '2006-05-12', 33, 15, 84, 292, 7, 216, 150, 5, 225, 831, 0, 0, 108),
+    # ('usr_id_existed_3', 'usr_id_existed_3', '昆明', 'https://img1.doubanio.com/icon/usr_id_existed_3.jpg',
+    # '2005-12-03', 36, 243, 395, 144, 16, 124, 127, 6, 501, 1118, 16, 19, 14)
+    # ]
+    # for item in items:
+    #     members.insert([members.conv_member(item)])
 
-    # 测试删除用户: usr_id_existed_1
-    members.delete([members.conv_member(items[0])])
-    # 测试判断删除的用户ID是否存在
-    test = ("usr_id_existed_1", False)
-    if members.is_existed_by_id(test[0]) is not test[1]:
-        print('expected {}, got {}'.format(test[1], not test[1]))
-        print('测试失败：删除用户usr_id_existed_1')
-    else:
-        print('测试通过：删除用户usr_id_existed_1')
+    # # 测试判断ID是否存在
+    # tests = [("usr_id_not_existed", False), ("usr_id_existed_1", True)]
+    # try:
+    #     for test in tests:
+    #         if members.is_existed_by_id(test[0]) is not test[1]:
+    #             raise('expected {}, got {}'.format(test[1], not test[1]))
+    # except Exception as e:
+    #     print(e)
+    #     print('测试失败：判断用户是否存在')
+    # print('测试通过：判断用户是否存在')
 
-    # 测试删除剩余mock数据
-    for item in items:
-        members.delete([members.conv_member(item)])
-    items = members.fetch_all()
-    num_after_delete = len(items)
-    if num_after_delete != num_before_insert:
-        print('expected {}, got {}'.format(num_before_insert, num_after_delete))
-        print('测试失败：删除剩余用户')
-    else:
-        print('测试通过：删除剩余用户')
+    # # 测试删除用户: usr_id_existed_1
+    # members.delete([members.conv_member(items[0])])
+    # # 测试判断删除的用户ID是否存在
+    # test = ("usr_id_existed_1", False)
+    # if members.is_existed_by_id(test[0]) is not test[1]:
+    #     print('expected {}, got {}'.format(test[1], not test[1]))
+    #     print('测试失败：删除用户usr_id_existed_1')
+    # else:
+    #     print('测试通过：删除用户usr_id_existed_1')
 
-    # 查询过滤后的用户
-    items = members.fecth_match_me()
-    print()
-    print('----------------------------------------------------------------------------------')
-    print('过滤得到的用户数: ', len(items))
-    for item in items:
-        member = members.conv_member(item)
-        member.print_infos()
-        # member.print_basic_infos()
-        print()
+    # # 测试删除剩余mock数据
+    # for item in items:
+    #     members.delete([members.conv_member(item)])
+    # items = members.fetch_all()
+    # num_after_delete = len(items)
+    # if num_after_delete != num_before_insert:
+    #     print('expected {}, got {}'.format(num_before_insert, num_after_delete))
+    #     print('测试失败：删除剩余用户')
+    # else:
+    #     print('测试通过：删除剩余用户')
+
+    # # 查询过滤后的用户
+    # items = members.fecth_match_me()
+    # print()
+    # print('----------------------------------------------------------------------------------')
+    # print('过滤得到的用户数: ', len(items))
+    # for item in items:
+    #     member = members.conv_member(item)
+    #     member.print_infos()
+    #     # member.print_basic_infos()
+    #     print()
 
     # 删除表，新建表
     # members.dropTable()
