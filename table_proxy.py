@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import time
+import json
 from db import DBHandler
 from page_proxy import ProxyItem, ProxyList
-from logger import Logger
-log = Logger().logger
-import json
-from config import Config
+from config import config
+from logger import log
 
 
 class ProxyTable(DBHandler):
     """
     与代理IP相关的CRUD操作
     """
-    def __init__(self, db_addr='', table_name=Config().get('database', 'table_name_proxy')):
+    def __init__(self, db_addr='', table_name=config.get('database', 'table_name_proxy')):
         super(ProxyTable, self).__init__(db_addr, table_name)
 
     def create(self):
@@ -24,14 +23,15 @@ class ProxyTable(DBHandler):
             CREATE TABLE {} (
                 `ip_port` varchar(24) NOT NULL,
                 `create_date` date DEFAULT NULL,
-                `is_valid` bool DEFAULT true,
+                `is_valid` bool DEFAULT FALSE,
                 PRIMARY KEY (`ip_port`)
             )'''.format(self.get_table_name())
             self.get_cur().execute(sql)
+        except Exception as e:
+            raise e
+        finally:
             self.conn.commit()
             self.close_cur()
-        except Exception as e:
-            log.error(e)
 
     def insert(self, members):
         """
@@ -45,10 +45,11 @@ class ProxyTable(DBHandler):
             for member in members:
                 data = self.deconv_member(member)
                 self.get_cur().execute(sql, data)
+        except Exception as e:
+            raise e
+        finally:
             self.conn.commit()
             self.close_cur()
-        except Exception as e:
-            log.error(e)
 
     def delete(self, members):
         """
@@ -59,10 +60,11 @@ class ProxyTable(DBHandler):
             sql = 'DELETE FROM {} WHERE ip_port = ?'.format(table_name)
             for member in members:
                 self.get_cur().execute(sql, [member.ip_port])
-                self.conn.commit()
-            self.close_cur()
         except Exception as e:
-            log.error(e)
+            raise e
+        finally:
+            self.conn.commit()
+            self.close_cur()
 
     def fetch_proxy(self):
         """
@@ -73,26 +75,35 @@ class ProxyTable(DBHandler):
         """
         try:
             table_name = self.get_table_name()
-            sql = 'SELECT * FROM {} WHERE is_valid = 1 ORDER BY RANDOM() LIMIT 1'.format(table_name)
+            sql = 'SELECT * FROM {} WHERE is_valid = TRUE ORDER BY RANDOM() LIMIT 1'.format(table_name)
             member = self.get_cur().execute(sql).fetchone()
+            log.info('查询')
+            log.info('当前共有: {}'.format(len(self.fetch_all())))
             if member is None:
                 # 重新拉数据，插入数据，重新查询
-                members = ProxyList().crawl()
-                self.insert(members)
-                self.fetch_proxy()
+                log.info('重新拉数据')
+                try:
+                    members = ProxyList().crawl()
+                except Exception as e:
+                    raise e
+                else:
+                    self.insert(members)
+                    log.info('插入数据')
+                    return self.fetch_proxy()
             else:
                 member = self.conv_member(member)
                 if not member.valid_proxy():
                     # 删除该数据，重新查询
+                    log.info('删除该数据')
                     self.delete([member])
-                    self.fetch_proxy()
+                    return self.fetch_proxy()
                 else:
                     return member
+        except Exception as e:
+            raise e
+        finally:
             self.conn.commit()
             self.close_cur()
-        except Exception as e:
-            log.error(e)
-            return None
 
     def fetch_proxy_one(self):
         """
@@ -103,15 +114,15 @@ class ProxyTable(DBHandler):
         """
         try:
             table_name = self.get_table_name()
-            sql = 'SELECT * FROM {} WHERE is_valid = 1 ORDER BY RANDOM() LIMIT 1'.format(table_name)
+            sql = 'SELECT * FROM {} WHERE is_valid = TRUE ORDER BY RANDOM() LIMIT 1'.format(table_name)
             member = self.get_cur().execute(sql).fetchone()
             member = self.conv_member(member)
-            self.conn.commit()
-            self.close_cur()
             return member
         except Exception as e:
-            log.error(e)
-            return None
+            raise e
+        finally:
+            self.conn.commit()
+            self.close_cur()
 
     @staticmethod
     def conv_member(data):
@@ -145,17 +156,14 @@ class ProxyTable(DBHandler):
 
 
 if __name__ == '__main__':
-    p = ProxyTable()
+    pass
+    # p = ProxyTable()
+    # p.delete()
     # p.create()
-    members = p.fetch_all()
-    print(len(members))
-    # member = p.fetch_proxy()
-    member = p.fetch_proxy_one()
-    member.print_infos()
     # file_name = 'proxy.json'
     # with open(file_name, 'r') as f:
     #     proxies = json.load(f)
     #     for proxy in proxies:
     #         member = p.conv_member([proxy['ip_port'], proxy['create_date'], proxy['is_valid']])
     #         p.insert([member])
-    # p.fetch_proxy().print_infos()
+    # p.fetch_proxy_one().print_infos()

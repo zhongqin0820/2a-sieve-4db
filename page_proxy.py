@@ -1,16 +1,15 @@
+# -*- coding: utf-8 -*-
 import requests
 from time import sleep
 from lxml import etree
 import json
 import os
 import time
-from config import Config
-from logger import Logger
-log = Logger().logger
+from config import config
 
 
 class ProxyItem(object):
-    def __init__(self, ip_port, create_date=time.strptime(time.strftime("%Y-%m-%d", time.localtime()), "%Y-%m-%d"), is_valid=True):
+    def __init__(self, ip_port, create_date=time.strptime(time.strftime("%Y-%m-%d", time.localtime()), "%Y-%m-%d"), is_valid=False):
         super(ProxyItem, self).__init__()
         self.ip_port = ip_port
         self.create_date = create_date
@@ -25,13 +24,14 @@ class ProxyItem(object):
         :return: 是否有效
         :rtype: bool
         """
-        url = Config().get('proxy', 'test_url')
+        # FIXME: 似乎代理IP不起作用？
+        url = config.get('proxy', 'test_url')
         proxies = {
             'http': 'http://' + self.ip_port
         }
         if headers is '':
             headers = {
-                Config().get('headers', 'user_agent_info'): Config().get_ua()
+                config.get('headers', 'user_agent_info'): config.get_ua()
             }
         try:
             r = requests.get(url, headers=headers, allow_redirects=False, proxies=proxies, timeout=20)
@@ -39,10 +39,11 @@ class ProxyItem(object):
                 self.is_valid = True
             else:
                 self.is_valid = False
-                log.info(r.text)
+                raise Exception(r.text)
         except Exception as e:
-            log.error('{} failed: {}'.format(self.ip_port, e))
-        return self.is_valid
+            raise Exception('{} failed text:\n {}'.format(self.ip_port, e))
+        finally:
+            return self.is_valid
 
     def print_infos(self):
         """打印条目信息"""
@@ -64,11 +65,11 @@ class ProxyItem(object):
 
 class ProxyList(object):
     def __init__(self):
-        self.url = Config().get('proxy', 'page_url') + '/{0}'
+        self.url = config.get('proxy', 'page_url') + '/{0}'
         self.headers = {
-            Config().get('headers', 'user_agent_info'): Config().get_ua()
+            config.get('headers', 'user_agent_info'): config.get_ua()
         }
-        self.json_file = Config().get('proxy', 'file_name')
+        self.json_file = config.get('proxy', 'file_name')
 
     def get_page_url(self, page_num):
         """拼接得到代理IP页"""
@@ -82,14 +83,17 @@ class ProxyList(object):
             selector = etree.HTML(r)
             sleep(2)
         except Exception as e:
-            log.error('get xicidaili page faild....', e)
-        return selector
+            raise Exception('error info: {}'.format(e))
+        else:
+            return selector
 
     def get_proxies_from_page(self, page_num):
         """获取代理IP"""
+        proxies=[]
         try:
-            proxies=[]
             selector = self.get_page_selector(page_num)
+            if selector is None:
+                raise LookupError
             ip_list = selector.xpath('//table[@id="ip_list"]')[0]
             for each in ip_list[1:]:
                 ip =  each.xpath('td[2]/text()')[0]
@@ -99,8 +103,9 @@ class ProxyList(object):
                 if proxy.valid_proxy(self.headers):
                     proxies.append(proxy)
         except Exception as e:
-            log.error('analysis xicidaili faild...',e)
-        return proxies
+            raise Exception(e)
+        finally:
+            return proxies
 
     def crawl(self):
         return self.get_proxies_from_page(1)
@@ -122,5 +127,6 @@ class ProxyList(object):
 
 
 if __name__=='__main__':
-    p = ProxyList()
-    p.test()
+    pass
+    # p = ProxyList()
+    # p.test()
