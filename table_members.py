@@ -2,7 +2,6 @@
 import time
 from db import DBHandler
 from user import GroupMember
-from config import Config
 
 
 class MembersTable(DBHandler):
@@ -43,7 +42,7 @@ class MembersTable(DBHandler):
             self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def insert_basic_infos(self, members):
         """
@@ -68,7 +67,7 @@ class MembersTable(DBHandler):
                 self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def insert(self, members):
         """
@@ -86,7 +85,7 @@ class MembersTable(DBHandler):
             self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def delete(self, members):
         """
@@ -104,7 +103,7 @@ class MembersTable(DBHandler):
                 self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def update_infos(self, members):
         """
@@ -142,7 +141,7 @@ class MembersTable(DBHandler):
             self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def fetch_one_basic_infos(self):
         """
@@ -159,8 +158,7 @@ class MembersTable(DBHandler):
             self.close_cur()
             return GroupMember(member[0], member[1], member[2], member[3])
         except Exception as e:
-            print(e)
-            return None
+            raise e
 
     def is_existed_by_id(self, usr_id):
         """
@@ -182,8 +180,7 @@ class MembersTable(DBHandler):
             self.close_cur()
             return False
         except Exception as e:
-            print(e)
-            return False
+            raise e
 
     def fecth_match_me(self):
         """
@@ -200,8 +197,7 @@ class MembersTable(DBHandler):
             self.close_cur()
             return data
         except Exception as e:
-            print(e)
-            return None
+            raise e
 
     @staticmethod
     def conv_member(data):
@@ -251,15 +247,8 @@ class MembersTable(DBHandler):
 
 
 if __name__ == '__main__':
-    # 使用group_id作为表名
-    members = MembersTable(table_name=Config().get('group', 'id'))
-    items = members.fetch_all()
-    num_before_insert = len(items)
-    print('当前共有: ', num_before_insert)
-    print('随机打印一个用户：')
-    members.fetch_one_basic_infos().print_basic_infos()
-
-    # 默认的表：members里是拉到主页数据的用户表
+    pass
+    # # 默认的表：members里是拉到主页数据的用户表
     # members = MembersTable()
     # # 测试当前条目数
     # items = members.fetch_all()
@@ -271,7 +260,7 @@ if __name__ == '__main__':
     #     member.print_infos()
     #     # member.print_basic_infos()
     #     print()
-
+    #
     # # 测试将元祖数据转换为GroupMember实例后，插入数据的功能
     # items = [
     # ('usr_id_existed_1', 'usr_id_existed_1', '北京', 'https://img3.doubanio.com/icon/usr_id_existed_1.jpg',
@@ -283,7 +272,7 @@ if __name__ == '__main__':
     # ]
     # for item in items:
     #     members.insert([members.conv_member(item)])
-
+    #
     # # 测试判断ID是否存在
     # tests = [("usr_id_not_existed", False), ("usr_id_existed_1", True)]
     # try:
@@ -294,7 +283,7 @@ if __name__ == '__main__':
     #     print(e)
     #     print('测试失败：判断用户是否存在')
     # print('测试通过：判断用户是否存在')
-
+    #
     # # 测试删除用户: usr_id_existed_1
     # members.delete([members.conv_member(items[0])])
     # # 测试判断删除的用户ID是否存在
@@ -304,7 +293,7 @@ if __name__ == '__main__':
     #     print('测试失败：删除用户usr_id_existed_1')
     # else:
     #     print('测试通过：删除用户usr_id_existed_1')
-
+    #
     # # 测试删除剩余mock数据
     # for item in items:
     #     members.delete([members.conv_member(item)])
@@ -315,7 +304,7 @@ if __name__ == '__main__':
     #     print('测试失败：删除剩余用户')
     # else:
     #     print('测试通过：删除剩余用户')
-
+    #
     # # 查询过滤后的用户
     # items = members.fecth_match_me()
     # print()
@@ -326,7 +315,7 @@ if __name__ == '__main__':
     #     member.print_infos()
     #     # member.print_basic_infos()
     #     print()
-
-    # 删除表，新建表
-    # members.dropTable()
-    # members.create()
+    #
+    # # 删除表，新建表
+    # # members.dropTable()
+    # # members.create()

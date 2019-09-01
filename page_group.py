@@ -3,41 +3,61 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import time
-from config import Config
+from config import config
 from user import GroupMember
-
+from table_proxy import ProxyTable
+from logger import log
 
 class GroupList(object):
     """
     小组成员页相关操作
     """
-    def __init__(self, session, group_id=''):
+    def __init__(self, session=requests.Session(), group_id='', headers=None, proxies=None):
         """
         从小组拉取成员信息，小组成员页总页数
         """
         super(GroupList, self).__init__()
+        # 设置默认的参数
         self.s = session
         if group_id is '':
-            group_id = Config().get('group', 'id')
+            group_id = config.get('group', 'id')
+        if headers is None:
+            self.set_headers()
+        else:
+            self.headers = headers
+        if proxies is None:
+            self.set_proxies()
+        else:
+            self.proxies = proxies
         # 获取小组总人数
         self.group_members_url = "https://www.douban.com/group/{}/members".format(group_id)
-        url_group_buffer = self.s.get(self.group_members_url).text
-        bsObj = BeautifulSoup(url_group_buffer, features="lxml")
-        span_count = bsObj.find('span', {'class': 'count'})
-        total_members = 0
-        if span_count:
-            total_members_str = re.search(r'\(共(\d*)人\)', span_count.text)
-            if total_members_str:
-                total_members = int(total_members_str.group(1))
-        self.total_members = total_members
-        # 获取小组成员总页数
-        paginator_div = bsObj.find('div', {'class': 'paginator'})
-        total_pages = 0
-        if paginator_div:
-            total_pages_str = paginator_div.findAll('a')[-2].string
-            if total_pages_str:
-                total_pages = int(total_pages_str)
-        self.total_pages = total_pages
+        try:
+            # 建立连接
+            r = self.s.get(self.group_members_url, headers=self.headers, proxies=self.proxies, allow_redirects=False, timeout=20)
+            if r.status_code != 200:
+                # 连接失败
+                raise Exception('status: {}, url: {}'.format(r.status_code, r.url))
+        except Exception as e:
+            # 传给调用者来处理，通常是重新init: 更换headers,proxies
+            raise e
+        else:
+            url_group_buffer = r.text
+            soup = BeautifulSoup(url_group_buffer, features="lxml")
+            span_count = soup.find('span', {'class': 'count'})
+            total_members = 0
+            if span_count:
+                total_members_str = re.search(r'\(共(\d*)人\)', span_count.text)
+                if total_members_str:
+                    total_members = int(total_members_str.group(1))
+            self.total_members = total_members
+            # 获取小组成员总页数
+            paginator_div = soup.find('div', {'class': 'paginator'})
+            total_pages = 0
+            if paginator_div:
+                total_pages_str = paginator_div.findAll('a')[-2].string
+                if total_pages_str:
+                    total_pages = int(total_pages_str)
+            self.total_pages = total_pages
  
     def get_pageurl(self, page_num):
         """
@@ -63,15 +83,15 @@ class GroupList(object):
         # TODO: 过滤用户？
         # 无头像：https://img1.doubanio.com/icon/user_normal.jpg
         # 无地址
-        # TODO: 爬不到页面应该raise error
-        member_page = self.s.get(page_url)
+        member_page = self.s.get(page_url, headers=self.headers, proxies=self.proxies, allow_redirects=False, timeout=20)
         member_page_buffer = member_page.text
         soup = BeautifulSoup(member_page_buffer, features="lxml")
         div_list = soup.find('div', {'class': 'member-list'})
         if div_list is None:
-            return []
+            raise Exception('div_list is None')
         ul_user_list = div_list.findAll('li')
         member_list = []
+        # 提取信息
         if ul_user_list:
             for li in ul_user_list:
                 if li:
@@ -92,16 +112,45 @@ class GroupList(object):
                                     usr_addr = usr_addr.group(1)
                         m = GroupMember(usr_id,usr_name,usr_addr,url_icon)
                         member_list.append(m)
+                    else:
+                        raise Exception('div_pic is None')
+                else:
+                    raise Exception('li is None')
+        else:
+            raise Exception('ul_user_list is None')
         return member_list
+
+    def set_headers(self):
+        try:
+            config.use_section('headers')
+            self.headers = {
+                config.get(option='connection_info'): config.get(option='connection'),
+                config.get(option='user_agent_info'): config.get_ua()
+            }
+            log.info('{}'.format(self.headers))
+        except Exception as e:
+            raise e
+
+    def set_proxies(self):
+        p = ProxyTable()
+        member = p.fetch_proxy()
+        if member is None:
+            raise Exception('member is None')
+        else:
+            self.proxies = {
+                'http': 'http://' + member.ip_port
+            }
+            log.info('{}'.format(self.proxies))
 
 
 if __name__ == '__main__':
-    s = requests.Session()
-    g = GroupList(s)
-    for page_num in range(g.total_pages,0,-1):
-        page_url = g.get_pageurl(page_num)
-        page_members = g.get_contacts_from_pageurl(page_url)
-        for member in page_members:
-            member.print_basic_infos()
-            time.sleep(2)
-        break
+    pass
+    # s = requests.Session()
+    # g = GroupList(s)
+    # for page_num in range(g.total_pages,0,-1):
+    #     page_url = g.get_pageurl(page_num)
+    #     page_members = g.get_contacts_from_pageurl(page_url)
+    #     for member in page_members:
+    #         member.print_basic_infos()
+    #         time.sleep(2)
+    #     break
