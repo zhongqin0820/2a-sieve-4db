@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import sqlite3
 import os
-from config import Config
+from config import config
+from logger import log
 
 
 class DBHandler(object):
@@ -18,11 +19,10 @@ class DBHandler(object):
         :type table_name: str
         """
         super(DBHandler, self).__init__()
-        c = Config()
-        config = c.items('database')
-        self.type = config[0][1]
-        self.default_db_addr = config[1][1]
-        self.default_table_name = config[2][1]
+        c = config.items('database')
+        self.type = c[0][1]
+        self.default_db_addr = c[1][1]
+        self.default_table_name = c[2][1]
         self.db_addr = (lambda name: self.default_db_addr if name is '' else name)(db_addr)
         self.table_name = (lambda name: self.default_table_name if name is '' else name)(table_name)
         self.conn = None
@@ -57,11 +57,11 @@ class DBHandler(object):
         conn = sqlite3.connect(db_addr)
         if os.path.exists(db_addr) and os.path.isfile(db_addr):
             # 本地磁盘
-            print('数据库类型:[{}], 位于磁盘:[{}]'.format(self.type, db_addr))
+            log.info('数据库类型:[{}], 位于磁盘:[{}]'.format(self.type, db_addr))
             self.conn = conn
         else:
             # 内存
-            print('数据库类型:[{}], 位于内存:[{}]'.format(self.type, ':memory:'))
+            log.info('数据库类型:[{}], 位于内存:[{}]'.format(self.type, ':memory:'))
             self.conn = sqlite3.connect(':memory:')
 
     def set_cur(self):
@@ -115,4 +115,4 @@ class DBHandler(object):
             self.close_cur()
             return members
         except Exception as e:
-            print(e)
+            raise e

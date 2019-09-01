@@ -2,16 +2,16 @@
 import time
 from db import DBHandler
 from user import ContactsMember
-from config import Config
+from config import config
+
 
 class ContactsTable(DBHandler):
     """
     与我的关注列表用户相关的CRUD操作
     """
     def __init__(self, db_addr='', table_name=''):
-        c = Config()
-        config = c.items('database')
-        table_name = (lambda name: config[4][1] if name is '' else table_name)(table_name)
+        c = config.items('database')
+        table_name = (lambda name: c[4][1] if name is '' else table_name)(table_name)
         super(ContactsTable, self).__init__(db_addr, table_name)
 
     def create(self):
@@ -47,7 +47,7 @@ class ContactsTable(DBHandler):
             self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def insert_basic_infos(self, members):
         """
@@ -73,7 +73,7 @@ class ContactsTable(DBHandler):
                 self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def insert(self, members):
         """
@@ -90,7 +90,7 @@ class ContactsTable(DBHandler):
             self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def delete(self, members):
         """
@@ -106,7 +106,7 @@ class ContactsTable(DBHandler):
                 self.conn.commit()
             self.close_cur()
         except Exception as e:
-            print(e)
+            raise e
 
     def fetch_one_basic_infos(self):
         """
@@ -122,8 +122,7 @@ class ContactsTable(DBHandler):
             self.close_cur()
             return ContactsMember(member[0], member[1], member[2], member[3], member[4], member[5])
         except Exception as e:
-            print(e)
-            return None
+            raise e
 
     def is_existed_by_id(self, usr_id):
         """
@@ -144,8 +143,7 @@ class ContactsTable(DBHandler):
             self.close_cur()
             return False
         except Exception as e:
-            print(e)
-            return False
+            raise e
 
     def fecth_match_me(self):
         """
@@ -162,8 +160,7 @@ class ContactsTable(DBHandler):
             self.close_cur()
             return data
         except Exception as e:
-            print(e)
-            return None
+            raise e
 
     @staticmethod
     def conv_member(data):
@@ -214,9 +211,10 @@ class ContactsTable(DBHandler):
 
 
 if __name__ == '__main__':
-    members = ContactsTable()
-    # members.create()
-    # 测试当前条目数
-    items = members.fetch_all()
-    num_before_insert = len(items)
-    print('当前共有: ', num_before_insert)
+    pass
+    # members = ContactsTable()
+    # # members.create()
+    # # 测试当前条目数
+    # items = members.fetch_all()
+    # num_before_insert = len(items)
+    # print('当前共有: ', num_before_insert)
