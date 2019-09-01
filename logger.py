@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from logging import handlers
-from config import Config
+from config import config
 
 
 class Logger(object):
@@ -18,11 +18,11 @@ class Logger(object):
         'crit':logging.CRITICAL
     }
 
-    def __init__(self, filename=Config().get('logger', 'file_name'), level=Config().get('logger', 'level')):
+    def __init__(self, filename=config.get('logger', 'file_name'), level=config.get('logger', 'level')):
         # 默认设置
         fmt = '%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s'
-        backCount = int(Config().get('logger', 'backCount'))
-        when = Config().get('logger', 'when')
+        back_count = int(config.get('logger', 'backCount'))
+        when = config.get('logger', 'when')
         self.logger = logging.getLogger(filename)
         # 设置日志级别
         self.logger.setLevel(self.level_relations.get(level))
@@ -33,7 +33,7 @@ class Logger(object):
         # 设置屏幕上显示的格式
         sh.setFormatter(format_str)
         # 往文件里写入，指定间隔时间自动生成文件的处理器
-        th = handlers.TimedRotatingFileHandler(filename=filename, when=when, backupCount=backCount, encoding='utf-8')
+        th = handlers.TimedRotatingFileHandler(filename=filename, when=when, backupCount=back_count, encoding='utf-8')
         # 设置文件里写入的格式
         th.setFormatter(format_str)
         # 把对象加到logger里
@@ -41,6 +41,10 @@ class Logger(object):
         self.logger.addHandler(th)
 
 
+log = Logger().logger
+
+
 if __name__ == '__main__':
-    log = Logger().logger
-    log.error('error')
+    pass
+    # log = Logger().logger
+    # log.error('error')

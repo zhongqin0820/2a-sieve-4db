@@ -111,6 +111,9 @@ class Config(object):
             return ua
 
 
+config = Config()
+
+
 if __name__ == '__main__':
     """
     测试config的配置，config.ini下的内容应为
@@ -121,9 +124,10 @@ if __name__ == '__main__':
     password = root
     database = test
     """
-    # 测试随机读取ua
-    c = Config()
-    print(c.get_ua())
+    pass
+    # # 测试随机读取ua
+    # c = Config()
+    # print(c.get_ua())
     # # 测试其它操作
     # s = c.get(section="mysql", option="host")
     # print(s)
