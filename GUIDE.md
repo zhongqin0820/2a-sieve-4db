@@ -8,6 +8,10 @@
 - [Python Docstring 风格和写法学习](https://www.cnblogs.com/ryuasuka/p/11085387.html)：项目使用reST风格
 - [python导入自定义模块和包](https://www.cnblogs.com/telazy/p/8967515.html)
 
+## 关于错误处理
+- 一个原则就是谁调用，谁处理错误
+- log模块的信息只能利用`.format`输出字符串
+
 # 项目参考
 除了本身之前做的lezen1需要有这种功能之外，在搜索准备过程中，还参考了如下的一些内容：
 
@@ -19,6 +23,10 @@
 ## 实践讨论
 - [写了个程序来抓取共同喜好，有小伙伴一起来完善吗](https://www.douban.com/group/topic/65642322/)
 - [豆瓣上谁和你共同喜好最多？](https://www.douban.com/note/380153149/)
+
+### 强相关讨论+Repo
+- [Sky组非官方用户行为分析](https://www.douban.com/group/topic/86190345/)
+- [fionanotblack/douban_group_crawler](https://github.com/fionanotblack/douban_group_crawler)：给大佬递茶
 
 ### Github相关repo
 - [xiazcx/douban_seek](https://github.com/xiazcx/douban_seek)：非常朴素，并且已经无法work了
@@ -89,3 +97,4 @@
 
 # Changelog
 - 2019-08-30：创建文档，第一版内容
+- 2019-08-31：添加[强相关讨论+Repo](#强相关讨论+Repo)
