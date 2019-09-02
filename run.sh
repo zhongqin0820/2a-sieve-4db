@@ -3,7 +3,9 @@
 # -d后台运行爬虫容器，注意此处挂载的容器卷内容
 #docker run -d -v "$PWD":/usr/src/app -it --name crawl douban
 # --rm 执行后删除容器
-docker run -d -v "$PWD":/usr/src/app -it --rm --name crawl douban
+#docker run -d -v "$PWD":/usr/src/app -it --rm --name crawl douban
+# 运行容器
+docker run -v "$PWD":/usr/src/app -it --name crawl douban
 # 查看容器的控制台log
 #docker logs crawl | tail
 # 暂停容器

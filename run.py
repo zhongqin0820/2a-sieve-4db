@@ -55,7 +55,7 @@ def test_proxy():
 if __name__ == '__main__':
     pass
     # TODO: 通过命令行的方式来切换逻辑
-    print_table_info()
+    # print_table_info()
     # test_proxy()
-    # crawl_group_members()
+    crawl_group_members()
     # crawl_users()

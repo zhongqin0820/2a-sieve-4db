@@ -1,5 +1,10 @@
 # Changelog
-## [Unreleased] - 2019-08-29
+## [Unreleased] - 2019-09-01
+### 添加
+- 项目部署
+    - pull.sh：使用rsync将文件从远程同步到本地
+
+## [0.0.2] - 2019-09-01
 ### 添加
 - 项目雏形
     - 符合基本需求，可以work的代码
@@ -43,4 +48,5 @@
     - .editorconfig
 
 [Unreleased]: https://github.com/zhongqin0820/2a-sieve-4db
+[0.0.2]: https://github.com/zhongqin0820/2a-sieve-4db/releases/tag/v0.0.2
 [0.0.1]: https://github.com/zhongqin0820/2a-sieve-4db/releases/tag/v0.0.1

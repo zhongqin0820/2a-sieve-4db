@@ -32,6 +32,7 @@
 ├── page_contacts.py            #爬虫：与关注列表页操作相关
 ├── page_group.py               #爬虫：与小组成员页操作相关
 ├── page_proxy.py               #爬虫：与代理IP爬取相关
+├── pull.sh                     #部署：使用rsync将文件从远程同步到本地
 ├── requirements.txt            #部署：通过pipreqs ./ --force覆盖生成的环境依赖文件
 ├── run.py                      #爬虫：入口文件
 ├── run.sh                      #部署：新建与run.py中相对应任务的容器
@@ -52,8 +53,8 @@
 项目提供快速构建环境的一套脚本
 - 本地执行：`./deploy.sh`将项目相关执行文件上传到远程服务器
 - 远程执行：
-    - `sh build.sh`：安装docker, 根据Dockerfile构建镜像
-    - `sh run.sh`：根据run.py创建对应的容器并执行对应的内容
+    - `./build.sh`：安装docker, 根据Dockerfile构建镜像
+    - `./run.sh`：根据run.py创建对应的容器并执行对应的内容
 
 ### 本地
 - Python v3+
@@ -61,9 +62,11 @@
 - `python run.py`：执行
 
 ## 执行产生的文件
+可以使用`pull.sh`将运行结果和日志文件从远程同步到本地
 - `douban.db`：对应的sqlite数据库文件
 - `default.log`：对应的日志文件
 
 # Changelog
 - 2019-08-29: 创建文档并添加项目说明以及目录说明；添加使用说明
 - 2019-09-01: 添加项目文档说明，更新目录说明，更新使用说明
+- 2019-09-02: 添加`pull.sh`的对应描述
