@@ -1,15 +1,13 @@
 # 忽略cache等
 __pycache__/*
+*/__pycache__/*
+*.pyc
 .idea/*
 .DS_Store
 */.DS_Store
 
-# 忽略项目相关的文件
-*.db
-*.log
-*.log.2*
+# 忽略项目执行无关/敏感的内容
+outputs/
 config.ini
-docs/
-stash/
-# 忽略通过python page_proxy.py得到的代理IP文件
-proxy.json
+__docs/
+__stash/
