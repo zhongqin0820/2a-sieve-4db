@@ -3,10 +3,11 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import time
-from config import config
-from user import GroupMember
-from table_proxy import ProxyTable
-from logger import log
+from common.config import config
+from common.logger import log
+from ..common.user import GroupMember
+from ..proxy.table import ProxyTable
+
 
 class GroupList(object):
     """
@@ -38,13 +39,14 @@ class GroupList(object):
                 # 连接失败
                 raise Exception('status: {}, url: {}'.format(r.status_code, r.url))
         except Exception as e:
-            # 传给调用者来处理，通常是重新init: 更换headers,proxies
-            raise e
+            raise Exception('GroupList: {}'.format(e))
         else:
             url_group_buffer = r.text
+            # IMPROVE: 需要在BeautifulSoup和re中择一进行解析
             soup = BeautifulSoup(url_group_buffer, features="lxml")
             span_count = soup.find('span', {'class': 'count'})
             total_members = 0
+            # 获取小组成员总数
             if span_count:
                 total_members_str = re.search(r'\(共(\d*)人\)', span_count.text)
                 if total_members_str:
@@ -80,9 +82,6 @@ class GroupList(object):
         :return: 当前页不在数据库内的成员列表
         :rtype: List[GroupMember]
         """
-        # TODO: 过滤用户？
-        # 无头像：https://img1.doubanio.com/icon/user_normal.jpg
-        # 无地址
         member_page = self.s.get(page_url, headers=self.headers, proxies=self.proxies, allow_redirects=False, timeout=20)
         member_page_buffer = member_page.text
         soup = BeautifulSoup(member_page_buffer, features="lxml")
@@ -129,28 +128,15 @@ class GroupList(object):
             }
             log.info('{}'.format(self.headers))
         except Exception as e:
-            raise e
+            raise Exception('set_headers: {}'.format(e))
 
     def set_proxies(self):
         p = ProxyTable()
         member = p.fetch_proxy()
         if member is None:
-            raise Exception('member is None')
+            raise Exception('set_proxies: {}'.format('member is None'))
         else:
             self.proxies = {
                 'http': 'http://' + member.ip_port
             }
             log.info('{}'.format(self.proxies))
-
-
-if __name__ == '__main__':
-    pass
-    # s = requests.Session()
-    # g = GroupList(s)
-    # for page_num in range(g.total_pages,0,-1):
-    #     page_url = g.get_pageurl(page_num)
-    #     page_members = g.get_contacts_from_pageurl(page_url)
-    #     for member in page_members:
-    #         member.print_basic_infos()
-    #         time.sleep(2)
-    #     break

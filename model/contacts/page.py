@@ -3,9 +3,9 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import time
-from config import config
-from user import ContactsMember
-from crawler import Engine
+from common.config import config
+from ..common.user import ContactsMember
+
 
 class ContactsList(object):
     """
@@ -97,18 +97,3 @@ class ContactsList(object):
             m = ContactsMember(usr_id, usr_name, usr_addr, url_icon, usr_sign, usr_rs)
             member_list.append(m)
         return member_list
-
-        
-if __name__ == '__main__':
-    pass
-    # e = Engine()
-    # e.login()
-    # c = ContactsList(e.s)
-    # total_members, total_pages = c.total_members, c.total_pages
-    # print('共关注了{}位用户，列表页共有{}页'.format(c.total_members, c.total_pages))
-    # for page_num in range(1, total_pages+1):
-    #     print('当前进度：[{}/{}]'.format(page_num, total_pages))
-    #     page_members = c.get_contacts_from_page(page_num)
-    #     for member in page_members:
-    #         member.print_basic_infos()
-    #         time.sleep(5)

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import requests
-from time import sleep
-from lxml import etree
 import json
 import os
 import time
-from config import config
+from time import sleep
+from lxml import etree
+from common.config import config
 
 
 class ProxyItem(object):
-    def __init__(self, ip_port, create_date=time.strptime(time.strftime("%Y-%m-%d", time.localtime()), "%Y-%m-%d"), is_valid=False):
+    def __init__(self, ip_port, create_date=time.strptime(time.strftime("%Y-%m-%d", time.localtime()), "%Y-%m-%d"), is_valid=True):
         super(ProxyItem, self).__init__()
         self.ip_port = ip_port
         self.create_date = create_date
@@ -41,7 +41,7 @@ class ProxyItem(object):
                 self.is_valid = False
                 raise Exception(r.text)
         except Exception as e:
-            raise Exception('{} failed text:\n {}'.format(self.ip_port, e))
+            raise Exception('{} valid_proxy: {}'.format(self.ip_port, e))
         finally:
             return self.is_valid
 
@@ -83,7 +83,7 @@ class ProxyList(object):
             selector = etree.HTML(r)
             sleep(2)
         except Exception as e:
-            raise Exception('error info: {}'.format(e))
+            raise Exception('get_page_selector: {}'.format(e))
         else:
             return selector
 
@@ -93,27 +93,29 @@ class ProxyList(object):
         try:
             selector = self.get_page_selector(page_num)
             if selector is None:
-                raise LookupError
+                raise Exception('selector is None')
             ip_list = selector.xpath('//table[@id="ip_list"]')[0]
             for each in ip_list[1:]:
                 ip =  each.xpath('td[2]/text()')[0]
                 port = each.xpath('td[3]/text()')[0]
                 ip_port = ip+':'+port
                 proxy = ProxyItem(ip_port)
-                if proxy.valid_proxy(self.headers):
-                    proxies.append(proxy)
+                # FIXME: 代理IP无法验证
+                # if proxy.valid_proxy(self.headers):
+                    # proxies.append(proxy)
+                proxies.append(proxy)
         except Exception as e:
-            raise Exception(e)
+            raise Exception('get_proxies_from_page: {}'.format(e))
         finally:
             return proxies
 
-    def crawl(self):
-        return self.get_proxies_from_page(1)
+    def crawl(self, page_num=1):
+        return self.get_proxies_from_page(page_num)
 
     def save(self, page_nums):
         for page_num in range(1, page_nums+1):
             proxies = self.get_proxies_from_page(page_num)
-            print('有效IP数目', len(proxies))
+            print('拉取到代理IP数目：', len(proxies))
             proxies = [proxy.serialize() for proxy in proxies]
             with open(self.json_file, 'a') as f:
                 json.dump(proxies, f, sort_keys=True, indent =4, separators=(',', ': '),ensure_ascii=True)
@@ -124,9 +126,3 @@ class ProxyList(object):
             self.save(1)
         else:
             self.save(1)
-
-
-if __name__=='__main__':
-    pass
-    # p = ProxyList()
-    # p.test()

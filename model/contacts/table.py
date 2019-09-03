@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import time
-from db import DBHandler
-from user import ContactsMember
-from config import config
+from common.config import config
+from common.db import DBHandler
+from ..common.user import ContactsMember
 
 
 class ContactsTable(DBHandler):
     """
     与我的关注列表用户相关的CRUD操作
     """
-    def __init__(self, db_addr='', table_name=''):
-        c = config.items('database')
-        table_name = (lambda name: c[4][1] if name is '' else table_name)(table_name)
+    def __init__(self, db_addr='', table_name=config.get('database', 'table_name_contacts')):
         super(ContactsTable, self).__init__(db_addr, table_name)
+        self.create()
 
     def create(self):
         """
@@ -20,7 +19,7 @@ class ContactsTable(DBHandler):
         """
         try:
             sql = '''
-            CREATE TABLE {} (
+            CREATE TABLE IF NOT EXISTS {} (
                 `usr_id` varchar(15) NOT NULL,
                 `usr_name` varchar(100) NOT NULL,
                 `usr_addr` varchar(50) DEFAULT NULL,
@@ -110,13 +109,13 @@ class ContactsTable(DBHandler):
 
     def fetch_one_basic_infos(self):
         """
-        获取表内一个数据的基本信息
+        随机获取表内一个数据的基本信息
         :return: 包含基本信息的ContactsMember类实例
         :rtype: ContactsMember
         """
         try:
             table_name = self.get_table_name()
-            sql = 'SELECT usr_id, usr_name, usr_addr, url_icon, usr_sign, usr_rs FROM {}'.format(table_name)
+            sql = 'SELECT usr_id, usr_name, usr_addr, url_icon, usr_sign, usr_rs FROM {} ORDER BY RANDOM() LIMIT 1'.format(table_name)
             member = self.get_cur().execute(sql).fetchone()
             self.conn.commit()
             self.close_cur()
@@ -208,13 +207,3 @@ class ContactsTable(DBHandler):
             member.stats_music.collect,  #stats_music_collect
         )
         return data
-
-
-if __name__ == '__main__':
-    pass
-    # members = ContactsTable()
-    # # members.create()
-    # # 测试当前条目数
-    # items = members.fetch_all()
-    # num_before_insert = len(items)
-    # print('当前共有: ', num_before_insert)

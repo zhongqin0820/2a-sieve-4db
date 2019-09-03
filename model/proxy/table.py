@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import time
 import json
-from db import DBHandler
-from page_proxy import ProxyItem, ProxyList
-from config import config
-from logger import log
+from common.db import DBHandler
+from common.config import config
+from common.logger import log
+from .page import ProxyItem, ProxyList
 
 
 class ProxyTable(DBHandler):
@@ -13,6 +13,7 @@ class ProxyTable(DBHandler):
     """
     def __init__(self, db_addr='', table_name=config.get('database', 'table_name_proxy')):
         super(ProxyTable, self).__init__(db_addr, table_name)
+        self.create()
 
     def create(self):
         """
@@ -20,7 +21,7 @@ class ProxyTable(DBHandler):
         """
         try:
             sql = '''
-            CREATE TABLE {} (
+            CREATE TABLE IF NOT EXISTS {} (
                 `ip_port` varchar(24) NOT NULL,
                 `create_date` date DEFAULT NULL,
                 `is_valid` bool DEFAULT FALSE,
@@ -28,7 +29,7 @@ class ProxyTable(DBHandler):
             )'''.format(self.get_table_name())
             self.get_cur().execute(sql)
         except Exception as e:
-            raise e
+            raise Exception('create: {}'.format(e))
         finally:
             self.conn.commit()
             self.close_cur()
@@ -46,7 +47,7 @@ class ProxyTable(DBHandler):
                 data = self.deconv_member(member)
                 self.get_cur().execute(sql, data)
         except Exception as e:
-            raise e
+            raise Exception('insert: {}'.format(e))
         finally:
             self.conn.commit()
             self.close_cur()
@@ -61,7 +62,7 @@ class ProxyTable(DBHandler):
             for member in members:
                 self.get_cur().execute(sql, [member.ip_port])
         except Exception as e:
-            raise e
+            raise Exception('delete: {}'.format(e))
         finally:
             self.conn.commit()
             self.close_cur()
@@ -74,12 +75,9 @@ class ProxyTable(DBHandler):
         :rtype: ProxyItem
         """
         try:
-            table_name = self.get_table_name()
-            sql = 'SELECT * FROM {} WHERE is_valid = TRUE ORDER BY RANDOM() LIMIT 1'.format(table_name)
-            member = self.get_cur().execute(sql).fetchone()
-            log.info('查询')
-            log.info('当前共有: {}'.format(len(self.fetch_all())))
-            if member is None:
+            num = len(self.fetch_all())
+            log.info('查询，当前共有: {}'.format(num))
+            if num == 0:
                 # 重新拉数据，插入数据，重新查询
                 log.info('重新拉数据')
                 try:
@@ -87,23 +85,13 @@ class ProxyTable(DBHandler):
                 except Exception as e:
                     raise e
                 else:
+                    log.info('插入新数据: {}条'.format(len(members)))
                     self.insert(members)
-                    log.info('插入数据')
                     return self.fetch_proxy()
             else:
-                member = self.conv_member(member)
-                if not member.valid_proxy():
-                    # 删除该数据，重新查询
-                    log.info('删除该数据')
-                    self.delete([member])
-                    return self.fetch_proxy()
-                else:
-                    return member
+                return self.fetch_proxy_one()
         except Exception as e:
-            raise e
-        finally:
-            self.conn.commit()
-            self.close_cur()
+            raise Exception('fetch_proxy: {}'.format(e))
 
     def fetch_proxy_one(self):
         """
@@ -119,7 +107,7 @@ class ProxyTable(DBHandler):
             member = self.conv_member(member)
             return member
         except Exception as e:
-            raise e
+            raise Exception('fetch_proxy_one: {}'.format(e))
         finally:
             self.conn.commit()
             self.close_cur()
@@ -153,17 +141,3 @@ class ProxyTable(DBHandler):
             member.is_valid,  #is_valid
         )
         return data
-
-
-if __name__ == '__main__':
-    pass
-    # p = ProxyTable()
-    # p.delete()
-    # p.create()
-    # file_name = 'proxy.json'
-    # with open(file_name, 'r') as f:
-    #     proxies = json.load(f)
-    #     for proxy in proxies:
-    #         member = p.conv_member([proxy['ip_port'], proxy['create_date'], proxy['is_valid']])
-    #         p.insert([member])
-    # p.fetch_proxy_one().print_infos()
