@@ -8,7 +8,7 @@ class Config(object):
     """
     从ini文件中读取配置信息
     """
-    def __init__(self, file_name='config.ini'):
+    def __init__(self, file_name='common/config.ini'):
         """
         :param file_name: ini配置文件所在路径: /path/to/config.ini
         :type file_name: str
@@ -112,32 +112,3 @@ class Config(object):
 
 
 config = Config()
-
-
-if __name__ == '__main__':
-    """
-    测试config的配置，config.ini下的内容应为
-    [mysql]
-    host = 127.0.0.1
-    port = 3306
-    user = root
-    password = root
-    database = test
-    """
-    pass
-    # # 测试随机读取ua
-    # c = Config()
-    # print(c.get_ua())
-    # # 测试其它操作
-    # s = c.get(section="mysql", option="host")
-    # print(s)
-    # s = c.get(section="mysql", option="port")
-    # print(s)
-    # # 设置section
-    # c.use_section("mysql")
-    # s = c.get(option="user")
-    # print(s)
-    # s = c.get(option="password")
-    # print(s)
-    # s = c.get(option="database")
-    # print(s)

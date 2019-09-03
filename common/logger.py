@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from logging import handlers
-from config import config
+from .config import config
 
 
 class Logger(object):
@@ -42,9 +42,3 @@ class Logger(object):
 
 
 log = Logger().logger
-
-
-if __name__ == '__main__':
-    pass
-    # log = Logger().logger
-    # log.error('error')
