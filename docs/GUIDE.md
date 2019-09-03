@@ -7,6 +7,8 @@
 - [如何把微信二维码藏进命令行里](https://blog.wolfogre.com/posts/qrcode-in-shell/)
 - [Python Docstring 风格和写法学习](https://www.cnblogs.com/ryuasuka/p/11085387.html)：项目使用reST风格
 - [python导入自定义模块和包](https://www.cnblogs.com/telazy/p/8967515.html)
+    - [python中自定义module的方法及注意事项](https://blog.csdn.net/SunJW_2017/article/details/89470025)
+    - [python基础教程之自定义模块，模块的运行方式](https://www.xin3721.com/Python/python15268.html)
 
 ## 关于错误处理
 - 一个原则就是谁调用，谁处理错误
